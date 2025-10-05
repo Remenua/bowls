@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finger Roll — дорожка, инерция, счёт</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="980" height="560" aria-label="Finger Roll"></canvas>
+
+    <div class="hud">
+      <span class="badge">Счёт: <span id="score">0</span> м</span>
+      <span class="badge" id="hint">Свайпай по направлению движения — частые касания дают небольшой буст.</span>
+      <button class="btn" id="reset">Сброс</button>
+    </div>
+
+    <!-- Модалка поражения -->
+    <div id="loseVeil" class="veil">
+      <div class="panel lose">
+        <div class="stars"></div><div class="ribbons"></div>
+        <div class="art-wrap">
+          <img id="loseArt" class="art" src="./assets/archmage.webp" alt="Злой архимаг нависает" />
+        </div>
+        <div class="title">Вы пали с края!</div>
+        <div class="score">Ваш путь: <span id="loseScore">0</span> м</div>
+        <div class="actions"><button class="restart" id="restartFromLose">Начать заново</button></div>
+      </div>
+    </div>
+
+    <!-- Модалка победы -->
+    <div id="winVeil" class="veil">
+      <div class="panel win">
+        <div class="stars"></div><div class="ribbons"></div>
+        <div class="title">Победа, волшебник!</div>
+        <div class="score">Ваш путь: <span id="winScore">0</span> м</div>
+        <div class="actions"><button class="restart" id="restartFromWin">Начать заново</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./game.js"></script>
+</body>
+</html>
