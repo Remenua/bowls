@@ -1,119 +1,34 @@
-:root{
-  --bg:#0b1022; --fg:#e2e8f0; --panel:#070e1b; --panel-b:#324256;
-  --gold:#facc15; --green:#22c55e; --road:#1b2637; --grid:#0c1222;
-}
+:root{--bg:#0b1022;--fg:#e2e8f0;--panel:#070e1b;--panel-b:#324256;--road:#1b2637}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,Arial}
 .wrap{position:relative;display:grid;place-items:center;height:100%;gap:14px;padding:16px}
-canvas{background:var(--panel);border:1px solid var(--panel-b);border-radius:18px;touch-action:none;box-shadow:0 18px 40px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04)}
-
-.hud{
-  position:absolute;top:16px;left:50%;transform:translateX(-50%);
-  display:flex;gap:12px;align-items:center;
-  background:rgba(10,16,30,.55);border:1px solid rgba(180,200,255,.18);
-  padding:8px 12px;border-radius:999px;backdrop-filter:blur(6px)
-}
-.badge{padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.35);background:rgba(2,6,23,.55);font-weight:700;letter-spacing:.3px}
+canvas{background:var(--panel);border:1px solid var(--panel-b);border-radius:18px;touch-action:none;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.04)}
+.hud{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:rgba(10,16,30,.55);border:1px solid rgba(180,200,255,.18);padding:8px 12px;border-radius:999px;backdrop-filter:blur(6px)}
+.badge{padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.35);background:rgba(2,6,23,.55);font-weight:700}
 .btn{background:#1f2937;border:1px solid #3b4453;color:#e5e7eb;padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:700}
 .btn:hover{background:#111827}
 
-/* Вуаль: скрыта по умолчанию, центрирует содержимое */
-.veil{
-  position:fixed; inset:0;
-  display:none;
-  place-items:center;
-  background:rgba(0,0,0,.35);
-  backdrop-filter:blur(2px);
-  z-index:1000;
-}
-.veil.show{ display:grid; }
-
-/* Базовая панель (общая для победы и поражения) */
-.panel{
-  position:relative; z-index:10;
-  width:min(520px, 90vw);
-  border-radius:22px;
-  padding:18px 18px 20px;
-  text-align:center;
-  border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 25px 80px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
-  overflow:hidden; /* по умолчанию аккуратно обрезаем */
-}
-
-.panel .title{
-  font-weight:900;
-  font-size:clamp(24px,4.6vw,34px);
-  margin:6px 0 6px;
-  letter-spacing:1px;
-  text-transform:uppercase;
-}
-.panel .score{font-size:clamp(18px,3.5vw,22px);opacity:.95;margin-bottom:12px}
+/* Модалки */
+.veil{position:fixed;inset:0;display:none;place-items:center;backdrop-filter:blur(2px);z-index:9999}
+.veil.show{display:grid}
+.panel{position:relative;width:min(560px,92vw);border-radius:24px;padding:22px;text-align:center;border:1px solid rgba(255,255,255,.2);
+        box-shadow:0 25px 80px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.06);overflow:hidden}
+.panel .title{font-weight:900;font-size:clamp(26px,5vw,36px);margin:8px 0 6px;letter-spacing:1px;text-transform:uppercase}
+.panel .score{font-size:clamp(18px,3.5vw,22px);opacity:.95;margin-bottom:14px}
 .panel .actions{display:flex;justify-content:center;gap:12px;margin-top:8px}
 .panel .restart{padding:10px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(7,12,24,.65);color:#fff;cursor:pointer;font-weight:800}
 .panel .restart:hover{background:rgba(7,12,24,.9)}
-
-/* фоновые украшения */
 .stars,.ribbons{position:absolute;inset:-10%;pointer-events:none}
-.stars{
-  background:
-    radial-gradient(ellipse at 20% 30%, rgba(255,255,255,.2), transparent 40%),
-    radial-gradient(ellipse at 70% 10%, rgba(255,220,120,.15), transparent 45%),
-    radial-gradient(ellipse at 80% 70%, rgba(140,190,255,.12), transparent 50%);
-  filter:blur(1px)
-}
-.ribbons{
-  background:conic-gradient(from 0deg at 50% 50%,
-    rgba(255,214,94,.3), rgba(164,221,255,.2), rgba(219,182,255,.25), rgba(255,214,94,.3));
-  mix-blend-mode:screen; opacity:.35
-}
-
-/* Темы панелей */
 .panel.win{background:linear-gradient(135deg,#0b1a2e 0%,#132e37 45%,#1b2b0d 100%)}
 .panel.win .title{color:#ffe98a;text-shadow:0 0 18px rgba(255,233,138,.6),0 0 6px rgba(255,233,138,.9)}
-
 .panel.lose{background:linear-gradient(135deg,#1a0d16 0%,#280e1e 45%,#0d142a 100%)}
 .panel.lose .title{color:#ff9db8;text-shadow:0 0 18px rgba(255,80,120,.5),0 0 6px rgba(255,120,160,.9)}
-
-/* -------- ПОРАЖЕНИЕ: маг над рамкой, без «засвета» вокруг -------- */
-
-/* Разрешаем выступать только для поражения,
-   но при этом фоны строго обрезаем по радиусу панели */
-.panel.lose{ overflow:visible; }
-.panel.lose .stars,
-.panel.lose .ribbons{
-  inset:0;                             /* не выходят за края */
-  clip-path: inset(0 round 22px);      /* обрезка по скруглению панели */
-}
-
-/* маг — НАД рамкой (z:20), текст — ещё выше (z:30) */
-.panel .title, .panel .score, .panel .actions{ position:relative; z-index:30; }
-
-.panel.lose .art-wrap{
-  position:absolute;
-  top:-300px; left:50%;
-  transform:translateX(-50%);
-  width:78%; max-width:460px;
-  z-index:20;                          /* выше фона/границы панели */
-  margin:0; display:block;
-  pointer-events:none;
-}
-.panel.lose .art{
-  display:block; width:100%; height:auto; image-rendering:auto;
-  filter:drop-shadow(0 12px 30px rgba(255,153,0,.25))
-         drop-shadow(0 0 16px rgba(255,190,60,.18));
-  animation:loseArtIn .42s ease-out forwards,
-             lightningPulse 2.6s ease-in-out .42s infinite alternate;
-}
-
-/* чуть опускаем заголовок, чтобы не упирался в мага */
-.panel.lose .title{ margin-top:60px; }
-
-/* анимации */
-@keyframes loseArtIn{
-  from{opacity:0;transform:translateY(-12px) scale(.98)}
-  to{opacity:1;transform:translateY(0) scale(1)}
-}
-@keyframes lightningPulse{
-  0%{filter:drop-shadow(0 8px 20px rgba(255,160,0,.18)) drop-shadow(0 0 10px rgba(255,190,80,.15))}
-  100%{filter:drop-shadow(0 14px 40px rgba(255,160,0,.35)) drop-shadow(0 0 22px rgba(255,210,120,.28))}
-}
+.panel.lose{overflow:visible}
+.panel .title,.panel .score,.panel .actions{position:relative;z-index:30}
+.panel.lose .art-wrap{position:absolute;top:-300px;left:50%;transform:translateX(-50%);width:78%;max-width:460px;z-index:20;pointer-events:none}
+.panel.lose .art{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 30px rgba(255,153,0,.25)) drop-shadow(0 0 16px rgba(255,190,60,.18));
+                animation:loseArtIn .42s ease-out forwards, lightningPulse 2.6s ease-in-out .42s infinite alternate}
+.panel.lose .title{margin-top:60px}
+@keyframes loseArtIn{from{opacity:0;transform:translateY(-12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes lightningPulse{0%{filter:drop-shadow(0 8px 20px rgba(255,160,0,.18)) drop-shadow(0 0 10px rgba(255,190,80,.15))}
+100%{filter:drop-shadow(0 14px 40px rgba(255,160,0,.35)) drop-shadow(0 0 22px rgba(255,210,120,.28))}}

@@ -1,75 +1,148 @@
 'use strict';
 
 /* ===== DOM ===== */
+const levelEl = document.getElementById('level');
+let   levelIndex = Number(localStorage.getItem('fr_levelIndex') || 0);
+
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const ctx     = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
-const resetBtn = document.getElementById('reset');
-const loseVeil = document.getElementById('loseVeil');
-const winVeil  = document.getElementById('winVeil');
-const loseScoreEl = document.getElementById('loseScore');
-const winScoreEl  = document.getElementById('winScore');
-const restartFromLose = document.getElementById('restartFromLose');
-const restartFromWin  = document.getElementById('restartFromWin');
-const loseArt = document.getElementById('loseArt');
+const resetBtn= document.getElementById('reset');
+
+const loseVeil       = document.getElementById('loseVeil');
+const winVeil        = document.getElementById('winVeil');
+const loseScoreEl    = document.getElementById('loseScore');
+const winScoreEl     = document.getElementById('winScore');
+const restartFromLose= document.getElementById('restartFromLose');
+const restartFromWin = document.getElementById('restartFromWin');
+const loseArt        = document.getElementById('loseArt');
 
 const W = canvas.width, H = canvas.height;
 
-/* === Restart handlers (кнопки + делегирование) === */
+/* ===== Кнопки перезапуска (поражение/сброс) ===== */
 function onRestart(e){
   if (e) { e.preventDefault(); e.stopPropagation(); }
   reset();
 }
-
-// навешиваем и click, и touchstart
 ['click','touchstart'].forEach(ev => {
   restartFromLose?.addEventListener(ev, onRestart, { passive:false });
-  restartFromWin ?.addEventListener(ev, onRestart, { passive:false });
-  resetBtn      ?.addEventListener(ev, onRestart, { passive:false });
+  resetBtn       ?.addEventListener(ev, onRestart, { passive:false });
 });
+// НЕ вешаем обработчик на restartFromWin тут — на победе он делает «следующий уровень»
 
-// делегирование на всю вуаль — пробивает любые оверлеи
+// Делегирование на всю вуаль (если что-то перекрывает)
 loseVeil?.addEventListener('click', (e)=>{
   if (e.target.closest('#restartFromLose')) onRestart(e);
 }, { passive:false });
-winVeil?.addEventListener('click', (e)=>{
-  if (e.target.closest('#restartFromWin')) onRestart(e);
-}, { passive:false });
 
-// хоткей R — перезапуск
+// Хоткей R — перезапуск
 window.addEventListener('keydown', (e)=>{
   const k = (e.key || '').toLowerCase();
   if (k === 'r') onRestart(e);
 });
 
-/* ===== Track ===== */
-const path = [
-  {x: 70,  y: H*0.55},
-  {x: 200, y: H*0.40},
-  {x: 340, y: H*0.50},
-  {x: 480, y: H*0.32},
-  {x: 610, y: H*0.42},
-  {x: 720, y: H*0.60},
-  {x: 840, y: H*0.48},
-  {x: 930, y: H*0.48}
-];
-let roadWidth = 130; const roadHalf = ()=>roadWidth/2; let margin = 8;
+/* =================================================================== */
+/*                              LEVELS                                  */
+/* =================================================================== */
 
-/* ===== Precompute lengths ===== */
-const segLen = []; let totalLen = 0; const prefix = [0];
-for (let i=0;i<path.length-1;i++){
-  const a=path[i], b=path[i+1];
-  const L = Math.hypot(b.x-a.x, b.y-a.y);
-  segLen.push(L); totalLen += L; prefix.push(totalLen);
+// Уровень — массив точек {x,y} + ширина дороги.
+function makeS(bx, by, w, h){
+  return [
+    {x: bx+0.00*w, y: by+0.55*h},
+    {x: bx+0.18*w, y: by+0.40*h},
+    {x: bx+0.33*w, y: by+0.52*h},
+    {x: bx+0.50*w, y: by+0.32*h},
+    {x: bx+0.66*w, y: by+0.44*h},
+    {x: bx+0.79*w, y: by+0.62*h},
+    {x: bx+0.90*w, y: by+0.50*h},
+    {x: bx+1.00*w, y: by+0.50*h},
+  ];
 }
 
-/* ===== Ball (no auto-centering) ===== */
-const ball = { x: path[0].x, y: path[0].y, r: 16, vx:0, vy:0, angle:0 };
+function makeGentle(seed=1){
+  const rand = (()=>{ let s=seed|0; return ()=> (s=Math.imul(48271, s)%0x7fffffff)/0x7fffffff; })();
+  const pts = [];
+  const Wc = W*0.86, Hc = H*0.70, bx = W*0.07, by = H*0.15;
+  const n = 8;
+  for(let i=0;i<n;i++){
+    const t = i/(n-1);
+    const x = bx + Wc*t;
+    const y = by + Hc*(0.45 + 0.25*Math.sin( (t*2*Math.PI) + rand()*0.9 ));
+    pts.push({x,y});
+  }
+  return pts;
+}
+
+function makeZig(seed=3){
+  const rand = (()=>{ let s=seed|0; return ()=> (s=Math.imul(16807, s)%0x7fffffff)/0x7fffffff; })();
+  const pts = [];
+  const Wc = W*0.86, bx=W*0.07, by=H*0.20, a=H*0.18;
+  const n=9;
+  for(let i=0;i<n;i++){
+    const t=i/(n-1);
+    const x=bx+Wc*t;
+    const y=by + (i%2? 0.55*H : 0.32*H) + (rand()-0.5)*a*0.2;
+    pts.push({x,y});
+  }
+  return pts;
+}
+
+// 7 уровней (легче → сложнее: сужаем ширину)
+const levels = [
+  { name:'Лесная тропа',     path: makeS(0,0, W*0.95,H), width:130 },
+  { name:'Петля дюн',        path: makeGentle(7),        width:125 },
+  { name:'Хребет дракона',   path: makeGentle(21),       width:120 },
+  { name:'Змеиный перекат',  path: makeZig(5),           width:118 },
+  { name:'Туманная балка',   path: makeGentle(42),       width:115 },
+  { name:'Обрыв Витиеватый', path: makeZig(11),          width:112 },
+  { name:'Каньон шамана',    path: makeGentle(77),       width:108 },
+];
+
+/* ===== Текущее состояние трассы/геометрии ===== */
+let path = [];                    // активный путь
+let roadWidth = 130;              // активная ширина
+const roadHalf = ()=> roadWidth/2;
+let margin = 8;
+
+let segLen = [];                  // длина каждого сегмента
+let totalLen = 0;
+let prefix = [0];                 // префиксные суммы для arc-length
+
+function prepareLengths(){
+  segLen = []; totalLen = 0; prefix = [0];
+  for(let i=0;i<path.length-1;i++){
+    const a=path[i], b=path[i+1];
+    const L = Math.hypot(b.x-a.x, b.y-a.y);
+    segLen.push(L); totalLen += L; prefix.push(totalLen);
+  }
+}
+
+function setLevel(i){
+  levelIndex = ((i % levels.length) + levels.length) % levels.length;
+  const L = levels[levelIndex];
+  path = L.path.map(p=>({x:p.x, y:p.y}));
+  roadWidth = L.width || 130;
+
+  if (levelEl) levelEl.textContent = String(levelIndex+1);
+  localStorage.setItem('fr_levelIndex', String(levelIndex));
+
+  prepareLengths();
+
+  // сдвиг стартовой позиции шара на начало пути
+  ball.x = path[0].x; ball.y = path[0].y; ball.vx=0; ball.vy=0; ball.angle=0;
+}
+
+/* =================================================================== */
+/*                           GAMEPLAY                                   */
+/* =================================================================== */
+
+/* Мяч и физика */
+const ball = { x: 0, y: 0, r: 16, vx:0, vy:0, angle:0 }; // координаты выставим при setLevel
 const physics = { friction: 0.985, accel: 0.366, maxSpeed: 9.0 };
 
 let running = true;
 
-/* ===== Input ===== */
+/* Ввод */
 const input = { active:false, x:0, y:0, lastX:0, lastY:0, swipeVX:0, swipeVY:0 };
 const TAP_WINDOW_MS = 900; let tapTimes = []; let boost = 1.0;
 
@@ -77,7 +150,7 @@ function registerTap(){
   const now = performance.now(); tapTimes.push(now);
   while (tapTimes.length && now - tapTimes[0] > TAP_WINDOW_MS) tapTimes.shift();
   const tps = tapTimes.length / (TAP_WINDOW_MS/1000);
-  boost = 1.0 + Math.min(0.5, tps * 0.10); // мягкий буст до +50%
+  boost = 1.0 + Math.min(0.5, tps * 0.10);
 }
 
 function worldPos(evt){
@@ -110,11 +183,11 @@ canvas.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.changed
 canvas.addEventListener('touchmove',  e=>{ e.preventDefault(); const t=e.changedTouches[0]; const p=worldPos(t); moveDrag(p.x,p.y); }, {passive:false});
 canvas.addEventListener('touchend',   e=>{ e.preventDefault(); endDrag(); }, {passive:false});
 
-/* Geometry */
+/* Геометрия */
 function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 function distPointToSegment(px,py, ax,ay, bx,by){
   const abx = bx-ax, aby = by-ay; const apx = px-ax, apy = py-ay; const ab2 = abx*abx + aby*aby;
-  const t = ab2 ? clamp((apx*abx + apy*aby)/ab2, 0, 1) : 0;
+  const t = ab2 ? Math.max(0, Math.min(1, (apx*abx + apy*aby)/ab2)) : 0;
   const qx = ax + t*abx, qy = ay + t*aby; const dx = px-qx, dy = py-qy; const d = Math.hypot(dx,dy);
   return { d, qx, qy, t, abx, aby };
 }
@@ -133,8 +206,9 @@ function arcLengthAt(px,py){
   return prefix[i] + t * segLen[i];
 }
 
-/* Panels */
+/* Модалки */
 function hidePanels(){ loseVeil.classList.remove('show'); winVeil.classList.remove('show'); }
+
 function showLose(){
   running=false; loseScoreEl.textContent = scoreMeters();
   if (loseArt){
@@ -144,22 +218,34 @@ function showLose(){
   }
   loseVeil.classList.add('show');
 }
+
 function showWin(){
-  running=false; winScoreEl.textContent  = scoreMeters();
+  running=false; winScoreEl.textContent = scoreMeters();
+  // Меняем текст кнопки и подписываем: следующий уровень
+  const btn = document.getElementById('restartFromWin');
+  if (btn) btn.textContent = 'Испытай себя → следующий уровень';
   winVeil.classList.add('show');
+
+  const goNext = (e)=>{
+    if (e){ e.preventDefault(); e.stopPropagation(); }
+    setLevel(levelIndex+1);
+    reset();
+  };
+  ['click','touchstart'].forEach(ev => btn?.addEventListener(ev, goNext, { once:true, passive:false }));
 }
 
+/* Сброс */
 function reset(){
   hidePanels(); running=true;
+  // вернём мяч на старт активного уровня
   ball.x = path[0].x; ball.y = path[0].y; ball.vx=0; ball.vy=0; ball.angle=0;
   input.active=false; tapTimes.length=0; boost=1.0; scoreEl.textContent='0';
 }
 
-/* Update */
+/* Апдейт/рендер */
 function update(){
   if(!running) return;
 
-  // input → impulse
   if (input.active){
     const dx = input.x - input.lastX; const dy = input.y - input.lastY;
     input.lastX = input.x; input.lastY = input.y;
@@ -176,13 +262,11 @@ function update(){
     }
   }
 
-  // integrate
   const v = Math.hypot(ball.vx, ball.vy);
   if (v > physics.maxSpeed){ ball.vx *= physics.maxSpeed/v; ball.vy *= physics.maxSpeed/v; }
   ball.vx *= physics.friction; ball.vy *= physics.friction;
   ball.x += ball.vx; ball.y += ball.vy;
 
-  // lose by center only
   const info = distToPolyline(ball.x, ball.y);
   if (info.d > (roadHalf() - margin)) { showLose(); return; }
   const goal = path[path.length-1];
@@ -190,22 +274,18 @@ function update(){
 
   scoreEl.textContent = scoreMeters();
 
-  // keep inside canvas (визуально)
   ball.x = clamp(ball.x, 0, W); ball.y = clamp(ball.y, 0, H);
 
-  // spin
   const step = Math.hypot(ball.vx, ball.vy);
   const circumference = Math.PI*2*ball.r;
   ball.angle += (step/circumference)*(Math.PI*2);
 }
 
-/* Score */
 function scoreMeters(){
   const s = arcLengthAt(ball.x, ball.y);
   return Math.max(0, Math.round(s/10));
 }
 
-/* Render */
 function drawBackdrop(){
   ctx.save(); ctx.globalAlpha = 0.16; ctx.strokeStyle = '#0c1222';
   for (let x=0; x<=W; x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
@@ -252,5 +332,9 @@ function draw(){ ctx.clearRect(0,0,W,H); drawBackdrop(); drawRoad(); drawStartFi
 function loop(){ update(); draw(); requestAnimationFrame(loop); }
 
 /* Boot */
-function init(){ reset(); loop(); }
+function init(){
+  setLevel(levelIndex);   // выставляем активную трассу
+  reset();
+  loop();
+}
 init();
