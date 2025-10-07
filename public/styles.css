@@ -7,6 +7,7 @@ canvas{background:var(--panel);border:1px solid var(--panel-b);border-radius:18p
 .badge{padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.35);background:rgba(2,6,23,.55);font-weight:700}
 .btn{background:#1f2937;border:1px solid #3b4453;color:#e5e7eb;padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:700}
 .btn:hover{background:#111827}
+.panel.lose .art{ display:none; }
 
 /* Модалки */
 .veil{position:fixed;inset:0;display:none;place-items:center;backdrop-filter:blur(2px);z-index:9999}

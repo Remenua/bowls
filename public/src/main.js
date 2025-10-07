@@ -50,8 +50,27 @@ window.addEventListener('keydown', (e)=>{
 function showLose(){
   running = false;
   loseScoreEl.textContent = String(scoreMeters());
+  // --- гарантированная подгрузка арта (и скрытие при ошибке) ---
+  const img = document.getElementById('loseArt');
+  if (img){
+    img.style.display = 'none';
+    // жёстко задаём путь (от index.html): ./assets/archmage.webp
+    img.onload  = ()=>{ img.style.display='block'; };
+    img.onerror = ()=>{ img.style.display='none'; };
+    // принудительная перезагрузка, чтобы обойти кэш 304
+    const cacheBust = Date.now().toString(36);
+    const baseSrc = './assets/archmage.png';
+    const nextSrc = `${baseSrc}?v=${cacheBust}`;
+    if (img.src.endsWith(baseSrc) || img.src.includes('archmage.webp')) {
+      // меняем на новый query, чтобы браузер не брал из кэша
+      img.src = nextSrc;
+    } else {
+      img.src = baseSrc;
+    }
+  }
   loseVeil.classList.add('show');
 }
+
 
 function goNextLevel(e){
   if (e){ e.preventDefault(); e.stopPropagation(); }
@@ -85,4 +104,4 @@ function loop(){
 // boot
 setLevel(levels, state.levelIndex, levelEl);
 resetEngine(scoreEl);
-git add .loop();
+loop();
