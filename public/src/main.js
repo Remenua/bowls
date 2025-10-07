@@ -59,9 +59,9 @@ function showLose(){
     img.onerror = ()=>{ img.style.display='none'; };
     // принудительная перезагрузка, чтобы обойти кэш 304
     const cacheBust = Date.now().toString(36);
-    const baseSrc = './assets/archmage.png';
+    const baseSrc = './assets/mage_lose.png';
     const nextSrc = `${baseSrc}?v=${cacheBust}`;
-    if (img.src.endsWith(baseSrc) || img.src.includes('archmage.webp')) {
+    if (img.src.endsWith(baseSrc) || img.src.includes('mage_lose.png')) {
       // меняем на новый query, чтобы браузер не брал из кэша
       img.src = nextSrc;
     } else {
