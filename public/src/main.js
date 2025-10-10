@@ -50,31 +50,26 @@ window.addEventListener('keydown', (e)=>{
 function showLose(){
   running = false;
   loseScoreEl.textContent = String(scoreMeters());
-  // --- гарантированная подгрузка арта (и скрытие при ошибке) ---
-  const img = document.getElementById('loseArt');
-  if (img){
-    img.style.display = 'none';
-    // жёстко задаём путь (от index.html): ./assets/archmage.webp
-    img.onload  = ()=>{ img.style.display='block'; };
-    img.onerror = ()=>{ img.style.display='none'; };
-    // принудительная перезагрузка, чтобы обойти кэш 304
+  const imgLose = document.getElementById('loseArt');
+  if (imgLose){
+    imgLose.style.display = 'none';
+    imgLose.onload  = ()=>{ imgLose.style.display='block'; };
+    imgLose.onerror = ()=>{ imgLose.style.display='none'; };
     const cacheBust = Date.now().toString(36);
     const baseSrc = './assets/mage_lose.png';
     const nextSrc = `${baseSrc}?v=${cacheBust}`;
-    if (img.src.endsWith(baseSrc) || img.src.includes('mage_lose.png')) {
-      // меняем на новый query, чтобы браузер не брал из кэша
-      img.src = nextSrc;
+    if (imgLose.src.endsWith(baseSrc) || imgLose.src.includes('mage_lose.png')) {
+      imgLose.src = nextSrc;
     } else {
-      img.src = baseSrc;
+      imgLose.src = baseSrc;
     }
   }
   loseVeil.classList.add('show');
 }
 
-
 function goNextLevel(e){
   if (e){ e.preventDefault(); e.stopPropagation(); }
-  hidePanels();                              // <<< фикс: прячем модалку победы
+  hidePanels();                              
   setLevel(levels, state.levelIndex + 1, levelEl);
   resetEngine(scoreEl);
   running = true;
@@ -83,12 +78,23 @@ function goNextLevel(e){
 function showWin(){
   running = false;
   winScoreEl.textContent = String(scoreMeters());
-  // подписать кнопку на переход (один раз)
-  ['click','touchstart'].forEach(ev =>
-    restartFromWin.addEventListener(ev, goNextLevel, { once:true, passive:false })
-  );
+  const imgWin = document.getElementById('winArt');
+  if (imgWin){
+    imgWin.style.display = 'none';
+    imgWin.onload  = ()=>{ imgWin.style.display='block'; };
+    imgWin.onerror = ()=>{ imgWin.style.display='none'; };
+    const cacheBust = Date.now().toString(36);
+    const baseSrc = './assets/mage_win.png';
+    const nextSrc = `${baseSrc}?v=${cacheBust}`;
+    if (imgWin.src.endsWith(baseSrc) || imgWin.src.includes('mage_win.png')) {
+      imgWin.src = nextSrc;
+    } else {
+      imgWin.src = baseSrc;
+    }
+  }
   winVeil.classList.add('show');
 }
+
 
 let running = true;
 
