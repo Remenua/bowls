@@ -26,6 +26,13 @@ state.levelIndex = Number(localStorage.getItem('fr_levelIndex') || 0);
 
 const input = createInput(canvas);
 
+const PRELOAD = {
+  win: new Image(),
+  lose: new Image(),
+};
+PRELOAD.win.src  = './assets/mage_win.png';
+PRELOAD.lose.src = './assets/mage_lose.png';
+
 function hidePanels(){
   loseVeil.classList.remove('show');
   winVeil.classList.remove('show');
@@ -50,22 +57,33 @@ window.addEventListener('keydown', (e)=>{
 function showLose(){
   running = false;
   loseScoreEl.textContent = String(scoreMeters());
+
   const imgLose = document.getElementById('loseArt');
-  if (imgLose){
-    imgLose.style.display = 'none';
-    imgLose.onload  = ()=>{ imgLose.style.display='block'; };
-    imgLose.onerror = ()=>{ imgLose.style.display='none'; };
-    const cacheBust = Date.now().toString(36);
-    const baseSrc = './assets/mage_lose.png';
-    const nextSrc = `${baseSrc}?v=${cacheBust}`;
-    if (imgLose.src.endsWith(baseSrc) || imgLose.src.includes('mage_lose.png')) {
-      imgLose.src = nextSrc;
-    } else {
-      imgLose.src = baseSrc;
-    }
+  if (imgLose && !imgLose.dataset.bound){
+    imgLose.src = PRELOAD.lose.src;   // 1 раз, дальше кэш браузера
+    imgLose.dataset.bound = '1';
   }
+
   loseVeil.classList.add('show');
 }
+
+function showWin(){
+  running = false;
+  winScoreEl.textContent = String(scoreMeters());
+
+  const imgWin = document.getElementById('winArt');
+  if (imgWin && !imgWin.dataset.bound){
+    imgWin.src = PRELOAD.win.src;     // 1 раз, дальше кэш
+    imgWin.dataset.bound = '1';
+  }
+
+  ['click','touchstart'].forEach(ev =>
+    restartFromWin.addEventListener(ev, goNextLevel, { once:true, passive:false })
+  );
+
+  winVeil.classList.add('show');
+}
+
 
 function goNextLevel(e){
   if (e){ e.preventDefault(); e.stopPropagation(); }
@@ -73,26 +91,6 @@ function goNextLevel(e){
   setLevel(levels, state.levelIndex + 1, levelEl);
   resetEngine(scoreEl);
   running = true;
-}
-
-function showWin(){
-  running = false;
-  winScoreEl.textContent = String(scoreMeters());
-  const imgWin = document.getElementById('winArt');
-  if (imgWin){
-    imgWin.style.display = 'none';
-    imgWin.onload  = ()=>{ imgWin.style.display='block'; };
-    imgWin.onerror = ()=>{ imgWin.style.display='none'; };
-    const cacheBust = Date.now().toString(36);
-    const baseSrc = './assets/mage_win.png';
-    const nextSrc = `${baseSrc}?v=${cacheBust}`;
-    if (imgWin.src.endsWith(baseSrc) || imgWin.src.includes('mage_win.png')) {
-      imgWin.src = nextSrc;
-    } else {
-      imgWin.src = baseSrc;
-    }
-  }
-  winVeil.classList.add('show');
 }
 
 
