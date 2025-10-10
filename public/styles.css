@@ -1,4 +1,11 @@
-:root{--bg:#0b1022;--fg:#e2e8f0;--panel:#070e1b;--panel-b:#324256;--road:#1b2637}
+:root{
+  --bg:#0b1022; --fg:#e2e8f0; --panel:#070e1b; --panel-b:#324256; --road:#1b2637;
+
+  /* Цвета свечения (R,G,B) */
+  --glow-win: 255,233,138;   /* тёплое золото для победы */
+  --glow-lose: 200,220,255;  /* холодный сине-голубой для поражения */
+}
+
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,Arial}
 .wrap{position:relative;display:grid;place-items:center;height:100%;gap:14px;padding:16px}
@@ -26,21 +33,50 @@ canvas{background:var(--panel);border:1px solid var(--panel-b);border-radius:18p
 .panel.win .title{color:#ffe98a;text-shadow:0 0 18px rgba(255,233,138,.6),0 0 6px rgba(255,233,138,.9)}
 .panel.win{overflow:visible}
 .panel.win .art-wrap{position:absolute;top:-280px;left:50%;transform:translateX(-50%);width:78%;max-width:460px;z-index:20;pointer-events:none}
-.panel.win .art{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 30px rgba(255,153,0,.25)) drop-shadow(0 0 16px rgba(255,190,60,.18));
-                animation:loseArtIn .42s ease-out forwards, lightningPulse 2.6s ease-in-out .42s infinite alternate}
+.panel.win .art{
+  --glow: var(--glow-win);
+  display:block;width:100%;height:auto;
+  filter:
+    drop-shadow(0 12px 30px rgba(var(--glow), .25))
+    drop-shadow(0 0 16px rgba(var(--glow), .18));
+  animation: loseArtIn .42s ease-out forwards,
+             lightningPulse 2.6s ease-in-out .42s infinite alternate;
+}
 .panel.win .title{margin-top:60px}
 
 /* Поражение */
 .panel.lose{background:linear-gradient(135deg,#1a0d16 0%,#280e1e 45%,#0d142a 100%)}
 .panel.lose .title{color:#ff9db8;text-shadow:0 0 18px rgba(255,80,120,.5),0 0 6px rgba(255,120,160,.9)}
 .panel.lose{overflow:visible}
-.panel.lose .art-wrap{position:absolute;top:-270px;left:50%;transform:translateX(-50%);width:78%;max-width:460px;z-index:20;pointer-events:none}
-.panel.lose .art{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 30px rgba(255,153,0,.25)) drop-shadow(0 0 16px rgba(255,190,60,.18));
-                animation:loseArtIn .42s ease-out forwards, lightningPulse 2.6s ease-in-out .42s infinite alternate}
+.panel.lose .art-wrap{position:absolute;top:-270px;left:55%;transform:translateX(-50%);width:78%;max-width:460px;z-index:20;pointer-events:none}
+.panel.lose .art{
+  --glow: var(--glow-lose);
+  display:block;width:100%;height:auto;
+  filter:
+    drop-shadow(0 12px 30px rgba(var(--glow), .25))
+    drop-shadow(0 0 16px rgba(var(--glow), .18));
+  animation: loseArtIn .42s ease-out forwards,
+             lightningPulse 2.6s ease-in-out .42s infinite alternate;
+}
 .panel.lose .title{margin-top:60px}
 
 .panel .title,.panel .score,.panel .actions{position:relative;z-index:30}
-@keyframes loseArtIn{from{opacity:0;transform:translateY(-12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes lightningPulse{0%{filter:drop-shadow(0 8px 20px rgba(255,160,0,.18)) drop-shadow(0 0 10px rgba(255,190,80,.15))}
-100%{filter:drop-shadow(0 14px 40px rgba(255,160,0,.35)) drop-shadow(0 0 22px rgba(255,210,120,.28))}}
 
+/* Анимации */
+@keyframes loseArtIn{
+  from{opacity:0;transform:translateY(-12px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+@keyframes lightningPulse{
+  0%{
+    filter:
+      drop-shadow(0 8px 20px rgba(var(--glow), .18))
+      drop-shadow(0 0 10px rgba(var(--glow), .15));
+  }
+  100%{
+    filter:
+      drop-shadow(0 14px 40px rgba(var(--glow), .35))
+      drop-shadow(0 0 22px rgba(var(--glow), .28));
+  }
+}

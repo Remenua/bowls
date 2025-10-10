@@ -11,7 +11,8 @@ const ctx = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 
 const scoreEl  = document.getElementById('score');
-const levelEl  = document.getElementById('level');
+const levelEl  = document.getElementById('level');       // № уровня
+const levelNameEl = document.getElementById('levelName'); // ИМЯ уровня
 const resetBtn = document.getElementById('reset');
 
 const loseVeil = document.getElementById('loseVeil');
@@ -60,7 +61,7 @@ function showLose(){
 
   const imgLose = document.getElementById('loseArt');
   if (imgLose && !imgLose.dataset.bound){
-    imgLose.src = PRELOAD.lose.src;   // 1 раз, дальше кэш браузера
+    imgLose.src = PRELOAD.lose.src;
     imgLose.dataset.bound = '1';
   }
 
@@ -73,7 +74,7 @@ function showWin(){
 
   const imgWin = document.getElementById('winArt');
   if (imgWin && !imgWin.dataset.bound){
-    imgWin.src = PRELOAD.win.src;     // 1 раз, дальше кэш
+    imgWin.src = PRELOAD.win.src;
     imgWin.dataset.bound = '1';
   }
 
@@ -84,15 +85,13 @@ function showWin(){
   winVeil.classList.add('show');
 }
 
-
 function goNextLevel(e){
   if (e){ e.preventDefault(); e.stopPropagation(); }
-  hidePanels();                              
-  setLevel(levels, state.levelIndex + 1, levelEl);
+  hidePanels();
+  setLevel(levels, state.levelIndex + 1, levelEl, levelNameEl); // <— ПЕРЕДАЁМ оба
   resetEngine(scoreEl);
   running = true;
 }
-
 
 let running = true;
 
@@ -106,6 +105,6 @@ function loop(){
 }
 
 // boot
-setLevel(levels, state.levelIndex, levelEl);
+setLevel(levels, state.levelIndex, levelEl, levelNameEl); // <— ПЕРЕДАЁМ оба
 resetEngine(scoreEl);
 loop();

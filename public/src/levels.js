@@ -10,6 +10,7 @@ export const state = {
   totalLen: 0,
   margin: 8,
   levelIndex: 0,
+  levelName: '',            // <— имя активного уровня
 };
 
 export function roadHalf(){ return state.roadWidth / 2; }
@@ -92,12 +93,19 @@ export function prepareLengths(){
   }
 }
 
-export function setLevel(levels, i, levelEl){
+// ВАЖНО: принимаем indexEl и nameEl — и пишем туда номер+имя
+export function setLevel(levels, i, indexEl, nameEl){
   state.levelIndex = ((i % levels.length)+levels.length)%levels.length;
   const L = levels[state.levelIndex];
+
   state.path = L.path.map(p=>({x:p.x, y:p.y}));
   state.roadWidth = L.width || 130;
+  state.levelName = L.name || '';
   prepareLengths();
-  if (levelEl) levelEl.textContent = String(state.levelIndex+1);
+
+  if (indexEl) indexEl.textContent = String(state.levelIndex+1);
+  if (nameEl)  nameEl.textContent  = state.levelName;
+
   localStorage.setItem('fr_levelIndex', String(state.levelIndex));
+  localStorage.setItem('fr_levelName', state.levelName);
 }
