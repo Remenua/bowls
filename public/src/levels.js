@@ -1,5 +1,7 @@
 // levels.js — трассы, геометрия, выбор уровня
 
+const SAFE_PAD = (margin, roadWidth) => margin + roadWidth / 2 + 8;
+
 export const state = {
   path: [],
   roadWidth: 130,
@@ -13,8 +15,10 @@ export const state = {
 export function roadHalf(){ return state.roadWidth / 2; }
 
 // --- генераторы путей ---
-function makeS(W, H){
-  const bx=0, by=0, w=W*0.95, h=H;
+function makeS(W, H, padPx = 0){
+  const bx = padPx, by = padPx;
+  const w  = W - 2 * padPx;
+  const h  = H - 2 * padPx;
   return [
     {x: bx+0.00*w, y: by+0.55*h},
     {x: bx+0.18*w, y: by+0.40*h},
@@ -26,6 +30,7 @@ function makeS(W, H){
     {x: bx+1.00*w, y: by+0.50*h},
   ];
 }
+
 function randSeed(seed){ let s=seed|0; return ()=> (s=Math.imul(48271,s)%0x7fffffff)/0x7fffffff; }
 function makeGentle(W,H,seed=1){
   const r=randSeed(seed), pts=[], Wc=W*0.86, Hc=H*0.70, bx=W*0.07, by=H*0.15, n=8;
@@ -44,8 +49,9 @@ function makeZig(W,H,seed=3){
 
 // --- список уровней ---
 export function buildLevels(W,H){
+  const w1 = 130;
   return [
-    { name:'Лесная тропа',     path: makeS(W,H),            width:130 },
+    { name:'Лесная тропа',     path: makeS(W,H, SAFE_PAD(state.margin, w1)), width:w1 },
     { name:'Петля дюн',        path: makeGentle(W,H,7),     width:125 },
     { name:'Хребет дракона',   path: makeGentle(W,H,21),    width:120 },
     { name:'Змеиный перекат',  path: makeZig(W,H,5),        width:118 },

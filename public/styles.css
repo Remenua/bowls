@@ -34,7 +34,7 @@ canvas{background:var(--panel);border:1px solid var(--panel-b);border-radius:18p
 .panel.lose{background:linear-gradient(135deg,#1a0d16 0%,#280e1e 45%,#0d142a 100%)}
 .panel.lose .title{color:#ff9db8;text-shadow:0 0 18px rgba(255,80,120,.5),0 0 6px rgba(255,120,160,.9)}
 .panel.lose{overflow:visible}
-.panel.lose .art-wrap{position:absolute;top:-300px;left:50%;transform:translateX(-50%);width:78%;max-width:460px;z-index:20;pointer-events:none}
+.panel.lose .art-wrap{position:absolute;top:-270px;left:50%;transform:translateX(-50%);width:78%;max-width:460px;z-index:20;pointer-events:none}
 .panel.lose .art{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 30px rgba(255,153,0,.25)) drop-shadow(0 0 16px rgba(255,190,60,.18));
                 animation:loseArtIn .42s ease-out forwards, lightningPulse 2.6s ease-in-out .42s infinite alternate}
 .panel.lose .title{margin-top:60px}
